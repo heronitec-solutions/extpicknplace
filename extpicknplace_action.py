@@ -315,7 +315,7 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
                 self.m_checkDNP.GetValue(),
                 True,
                 False,
-                self.m_selFormat.GetSelection() == 1,   # is csv?            
+                True,   # is csv?            
                 self.m_checkOrigin.GetValue(),
                 self.m_checkNegXCord.GetValue()
             )
@@ -346,7 +346,7 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
                 self.m_checkDNP.GetValue(),
                 False,
                 True,
-                self.m_selFormat.GetSelection() == 1,   # is csv?            
+                True,   # is csv?            
                 self.m_checkOrigin.GetValue(),
                 self.m_checkNegXCord.GetValue()
             )
