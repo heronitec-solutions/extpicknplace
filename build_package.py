@@ -56,6 +56,7 @@ def copy_plugin_assets():
 
     # metadata.json -> tmp
     shutil.copy2(root / "metadata.json", Path(BUILD_DIR) / "metadata.json")
+    shutil.copy2(root / "metadata.json", Path(BUILD_DIR) / "plugins" / "metadata.json")
 
     # extpicknplace_64x64.png -> tmp/resources/icon.png
     shutil.copy2(root / "extpicknplace_64x64.png", Path(BUILD_DIR) / "resources" / "icon.png")
@@ -87,6 +88,8 @@ def write_metadata_sizes(install_size: int, download_size: int) -> None:
     with metadata_path.open("w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
         f.write("\n")  # keep file newline-friendly
+        
+    shutil.copy2(Path(BUILD_DIR) / "metadata.json", Path(BUILD_DIR) / "plugins" / "metadata.json")
 
     print(
         f"Updated metadata.json: install_size={install_size} bytes, download_size={download_size} bytes."
