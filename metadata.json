@@ -27,7 +27,7 @@
             "download_url": "https://github.com/heronitec-solutions/extpicknplace/releases/download/v1.0.0/extpicknplace.zip",
             "install_size": 35987,
             "version": "1.0.0",
-            "status": "beta",
+            "status": "development",
             "kicad_version": "9.0"
         }
     ]
