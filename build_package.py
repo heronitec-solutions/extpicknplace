@@ -90,6 +90,7 @@ def write_metadata_sizes(install_size: int, download_size: int) -> None:
         f.write("\n")  # keep file newline-friendly
         
     shutil.copy2(Path(BUILD_DIR) / "metadata.json", Path(BUILD_DIR) / "plugins" / "metadata.json")
+    shutil.copy2(Path(BUILD_DIR) / "metadata.json", "./metadata.json")
 
     print(
         f"Updated metadata.json: install_size={install_size} bytes, download_size={download_size} bytes."
