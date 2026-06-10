@@ -29,18 +29,40 @@ class ExtPicknPlaceGUI ( wx.Frame ):
 
         bSizer7 = wx.BoxSizer( wx.VERTICAL )
 
-        bSizer8 = wx.BoxSizer( wx.HORIZONTAL )
+        fgSizer2 = wx.FlexGridSizer( 0, 3, 0, 0 )
+        fgSizer2.SetFlexibleDirection( wx.BOTH )
+        fgSizer2.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
+
+        self.m_staticText61 = wx.StaticText( self, wx.ID_ANY, _(u"Design variant:"), wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_staticText61.Wrap( -1 )
+
+        fgSizer2.Add( self.m_staticText61, 0, wx.ALL, 5 )
+
+        m_selVariantChoices = []
+        self.m_selVariant = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_selVariantChoices, 0 )
+        self.m_selVariant.SetSelection( 0 )
+        self.m_selVariant.SetMinSize( wx.Size( 400,-1 ) )
+
+        fgSizer2.Add( self.m_selVariant, 1, wx.ALL|wx.EXPAND, 5 )
+
+
+        fgSizer2.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 
         self.m_staticText1 = wx.StaticText( self, wx.ID_ANY, _(u"Output directory:"), wx.DefaultPosition, wx.DefaultSize, 0 )
         self.m_staticText1.Wrap( -1 )
 
-        bSizer8.Add( self.m_staticText1, 0, wx.ALL, 5 )
+        self.m_staticText1.SetMaxSize( wx.Size( 200,-1 ) )
+
+        fgSizer2.Add( self.m_staticText1, 0, wx.ALL, 5 )
 
         self.m_pickOutDir = wx.DirPickerCtrl( self, wx.ID_ANY, wx.EmptyString, _(u"Select a folder"), wx.DefaultPosition, wx.DefaultSize, wx.DIRP_DEFAULT_STYLE )
-        bSizer8.Add( self.m_pickOutDir, 1, wx.EXPAND|wx.ALL, 5 )
+        fgSizer2.Add( self.m_pickOutDir, 1, wx.EXPAND|wx.ALL, 5 )
 
 
-        bSizer7.Add( bSizer8, 0, wx.EXPAND, 5 )
+        fgSizer2.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+
+
+        bSizer7.Add( fgSizer2, 0, wx.EXPAND, 5 )
 
         bSizer71 = wx.BoxSizer( wx.HORIZONTAL )
 
@@ -91,6 +113,9 @@ class ExtPicknPlaceGUI ( wx.Frame ):
 
         self.m_checkDNP = wx.CheckBox( self, wx.ID_ANY, _(u"Exclude all footprints with the Do Not Popuplate flag set"), wx.DefaultPosition, wx.DefaultSize, 0 )
         bSizer61.Add( self.m_checkDNP, 0, wx.ALL, 5 )
+
+        self.m_checkBOM = wx.CheckBox( self, wx.ID_ANY, _(u"Exclue all footprints with Exluce from BOM flag set"), wx.DefaultPosition, wx.DefaultSize, 0 )
+        bSizer61.Add( self.m_checkBOM, 0, wx.ALL, 5 )
 
         self.m_checkEdgeLayer = wx.CheckBox( self, wx.ID_ANY, _(u"Include board edge layer"), wx.DefaultPosition, wx.DefaultSize, 0 )
         bSizer61.Add( self.m_checkEdgeLayer, 0, wx.ALL, 5 )
