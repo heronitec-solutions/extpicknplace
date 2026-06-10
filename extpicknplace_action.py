@@ -70,6 +70,9 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
         value_int = self.m_selValueField.FindString("Value")
         self.m_selValueField.SetSelection(value_int)
         
+        self.m_selVariant.Append(board.GetVariantNamesForUI())
+        self.m_selVariant.SetSelection(0)
+        
         # check if settings file exists
         if self.settings_file.is_file():
             self.__loadSettings__()
@@ -112,6 +115,7 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
             "--format", "gerber",
             "--side", "front",
             "--output", os.path.abspath(Path(self.m_pickOutDir.GetPath(), file_name_top)),
+            "--variant", self.m_selVariant.GetStringSelection(),
             os.path.abspath(pcb_filename),
         ]
         if self.m_checkDNP.GetValue():
@@ -126,17 +130,19 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
         subprocess.run(cmd, check=True)
         
         exporterTop = pcbnew.PLACE_FILE_EXPORTER(
-            board,
-            True,    # is mm?
-            False,
-            False,
-            self.m_checkDNP.GetValue(),
-            True,
-            False,
-            True,   # is csv?            
-            self.m_checkOrigin.GetValue(),
-            False
+            board,                                      # board refernce
+            True,                                       # true for mm, false for inches
+            False,                                      # Include only SMD components
+            False,                                      # Exclude any footprints with through-hole pads
+            False,                                      # Exclude DNP components
+            True,                                       # Exclude components flagged exclude from BOM
+            True,                                       # true to generate top side info             
+            False,                                      # true to generate bottom side info 
+            True,                                       # true for csv format, false for ascii (utf8) format
+            self.m_checkOrigin.GetValue(),              # true to use auxiliary axis as an origin for the position data 
+            False                                       # true to negate X coordinate on bottom side
         )
+        exporterTop.SetVariant(self.m_selVariant.GetStringSelection())
         exporterTop.GenPositionData()
         
         self.m_tcLog.AppendText("Front (top side) placement file: '" + os.path.abspath(Path(self.m_pickOutDir.GetPath(), file_name_top)) + "'.\n")
@@ -148,6 +154,7 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
             "--format", "gerber",
             "--side", "back",
             "--output", os.path.abspath(Path(self.m_pickOutDir.GetPath(), file_name_bottom)),
+            "--variant", self.m_selVariant.GetStringSelection(),
             os.path.abspath(pcb_filename),
         ]
         if self.m_checkDNP.GetValue():
@@ -162,17 +169,19 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
         subprocess.run(cmd, check=True)
         
         exporterBottom = pcbnew.PLACE_FILE_EXPORTER(
-            board,
-            True,    # is mm?
-            False,
-            False,
-            self.m_checkDNP.GetValue(),
-            False,
-            True,
-            True,   # is csv?            
-            self.m_checkOrigin.GetValue(),
-            False
+            board,                                      # board refernce
+            True,                                       # true for mm, false for inches
+            False,                                      # Include only SMD components
+            False,                                      # Exclude any footprints with through-hole pads
+            False,                                      # Exclude DNP components
+            True,                                       # Exclude components flagged exclude from BOM
+            False,                                      # true to generate top side info
+            True,                                       # true to generate bottom side info 
+            True,                                       # true for csv format, false for ascii (utf8) format
+            self.m_checkOrigin.GetValue(),              # true to use auxiliary axis as an origin for the position data 
+            False                                       # true to negate X coordinate on bottom side
         )
+        exporterBottom.SetVariant(self.m_selVariant.GetStringSelection())
         exporterBottom.GenPositionData()
         
         self.m_tcLog.AppendText("Back (bottom side) placement file: '" + os.path.abspath(Path(self.m_pickOutDir.GetPath(), file_name_bottom)) + "'.\n")
@@ -187,17 +196,19 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
         
         if self.m_checkSingleFile.GetValue():
             exporter = pcbnew.PLACE_FILE_EXPORTER(
-                board,
-                self.m_selUnits.GetSelection() == 1,    # is mm?
-                self.m_checkOnlySMD.GetValue(),
-                self.m_checkNoTH.GetValue(),
-                self.m_checkDNP.GetValue(),
-                True,
-                True,
-                self.m_selFormat.GetSelection() == 1,   # is csv?            
-                self.m_checkOrigin.GetValue(),
-                self.m_checkNegXCord.GetValue()
+                board,                                      # board refernce
+                self.m_selUnits.GetSelection() == 1,        # true for mm, false for inches
+                self.m_checkOnlySMD.GetValue(),             # Include only SMD components
+                self.m_checkNoTH.GetValue(),                # Exclude any footprints with through-hole pads
+                self.m_checkDNP.GetValue(),                 # Exclude DNP components
+                self.m_checkBOM.GetValue(),                 # Exclude components flagged exclude from BOM
+                True,                                       # true to generate top side info 
+                True,                                       # true to generate bottom side info 
+                self.m_selFormat.GetSelection() == 1,       # true for csv format, false for ascii (utf8) format
+                self.m_checkOrigin.GetValue(),              # true to use auxiliary axis as an origin for the position data 
+                self.m_checkNegXCord.GetValue()             # true to negate X coordinate on bottom side
             )     
+            exporter.SetVariant(self.m_selVariant.GetStringSelection())
             
             pos_data = exporter.GenPositionData()
             file_name = project_name + "-all"
@@ -212,17 +223,19 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
             self.m_tcLog.AppendText("Component count: " + str(exporter.GetFootprintCount()) + ".\n")
         else:
             exporterTop = pcbnew.PLACE_FILE_EXPORTER(
-                board,
-                self.m_selUnits.GetSelection() == 1,    # is mm?
-                self.m_checkOnlySMD.GetValue(),
-                self.m_checkNoTH.GetValue(),
-                self.m_checkDNP.GetValue(),
-                True,
-                False,
-                self.m_selFormat.GetSelection() == 1,   # is csv?            
-                self.m_checkOrigin.GetValue(),
-                self.m_checkNegXCord.GetValue()
+                board,                                      # board refernce
+                self.m_selUnits.GetSelection() == 1,        # true for mm, false for inches
+                self.m_checkOnlySMD.GetValue(),             # Include only SMD components
+                self.m_checkNoTH.GetValue(),                # Exclude any footprints with through-hole pads
+                self.m_checkDNP.GetValue(),                 # Exclude DNP components
+                self.m_checkBOM.GetValue(),                 # Exclude components flagged exclude from BOM
+                True,                                       # true to generate top side info 
+                False,                                      # true to generate bottom side info
+                self.m_selFormat.GetSelection() == 1,       # true for csv format, false for ascii (utf8) format
+                self.m_checkOrigin.GetValue(),              # true to use auxiliary axis as an origin for the position data 
+                self.m_checkNegXCord.GetValue()             # true to negate X coordinate on bottom side
             )
+            exporterTop.SetVariant(self.m_selVariant.GetStringSelection())
             
             pos_data_top = exporterTop.GenPositionData()
             file_name_top = project_name + "-" + exporterTop.GetFrontSideName()
@@ -239,17 +252,19 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
             self.m_tcLog.AppendText("Component count: " + str(exporterTop.GetFootprintCount()) + ".\n")
             
             exporterBottom = pcbnew.PLACE_FILE_EXPORTER(
-                board,
-                self.m_selUnits.GetSelection() == 1,    # is mm?
-                self.m_checkOnlySMD.GetValue(),
-                self.m_checkNoTH.GetValue(),
-                self.m_checkDNP.GetValue(),
-                False,
-                True,
-                self.m_selFormat.GetSelection() == 1,   # is csv?            
-                self.m_checkOrigin.GetValue(),
-                self.m_checkNegXCord.GetValue()
+                board,                                      # board refernce
+                self.m_selUnits.GetSelection() == 1,        # true for mm, false for inches
+                self.m_checkOnlySMD.GetValue(),             # Include only SMD components
+                self.m_checkNoTH.GetValue(),                # Exclude any footprints with through-hole pads
+                self.m_checkDNP.GetValue(),                 # Exclude DNP components
+                self.m_checkBOM.GetValue(),                 # Exclude components flagged exclude from BOM
+                False,                                      # true to generate top side info 
+                True,                                       # true to generate bottom side info
+                self.m_selFormat.GetSelection() == 1,       # true for csv format, false for ascii (utf8) format
+                self.m_checkOrigin.GetValue(),              # true to use auxiliary axis as an origin for the position data 
+                self.m_checkNegXCord.GetValue()             # true to negate X coordinate on bottom side
             )
+            exporterBottom.SetVariant(self.m_selVariant.GetStringSelection())
             
             pos_data_bottom = exporterBottom.GenPositionData()
             file_name_bottom = project_name + "-" + exporterBottom.GetBackSideName()
@@ -277,17 +292,19 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
         
         if self.m_checkSingleFile.GetValue():
             exporter = pcbnew.PLACE_FILE_EXPORTER(
-                board,
-                self.m_selUnits.GetSelection() == 1,    # is mm?
-                self.m_checkOnlySMD.GetValue(),
-                self.m_checkNoTH.GetValue(),
-                self.m_checkDNP.GetValue(),
-                True,
-                True,
-                True,   # allways csv
-                self.m_checkOrigin.GetValue(),
-                self.m_checkNegXCord.GetValue()
+                board,                                      # board refernce
+                self.m_selUnits.GetSelection() == 1,        # true for mm, false for inches
+                self.m_checkOnlySMD.GetValue(),             # Include only SMD components
+                self.m_checkNoTH.GetValue(),                # Exclude any footprints with through-hole pads
+                self.m_checkDNP.GetValue(),                 # Exclude DNP components
+                self.m_checkBOM.GetValue(),                 # Exclude components flagged exclude from BOM
+                True,                                       # true to generate top side info                 
+                True,                                       # true to generate bottom side info
+                True,                                       # true for csv format, false for ascii (utf8) format
+                self.m_checkOrigin.GetValue(),              # true to use auxiliary axis as an origin for the position data 
+                self.m_checkNegXCord.GetValue()             # true to negate X coordinate on bottom side
             )     
+            exporter.SetVariant(self.m_selVariant.GetStringSelection())
             
             pos_data = exporter.GenPositionData()
             pos_data = self.__parseCsv__(pos_data)
@@ -307,18 +324,20 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
             self.m_tcLog.AppendText("Placement file: '" + os.path.abspath(Path(self.m_pickOutDir.GetPath(), file_name)) + "'.\n")
             self.m_tcLog.AppendText("Component count: " + str(exporter.GetFootprintCount()) + ".\n")
         else:
-            exporterTop = pcbnew.PLACE_FILE_EXPORTER(
-                board,
-                self.m_selUnits.GetSelection() == 1,    # is mm?
-                self.m_checkOnlySMD.GetValue(),
-                self.m_checkNoTH.GetValue(),
-                self.m_checkDNP.GetValue(),
-                True,
-                False,
-                True,   # is csv?            
-                self.m_checkOrigin.GetValue(),
-                self.m_checkNegXCord.GetValue()
+            exporterTop = pcbnew.PLACE_FILE_EXPORTER(                
+                board,                                      # board refernce
+                self.m_selUnits.GetSelection() == 1,        # true for mm, false for inches
+                self.m_checkOnlySMD.GetValue(),             # Include only SMD components
+                self.m_checkNoTH.GetValue(),                # Exclude any footprints with through-hole pads
+                self.m_checkDNP.GetValue(),                 # Exclude DNP components
+                self.m_checkBOM.GetValue(),                 # Exclude components flagged exclude from BOM
+                True,                                       # true to generate top side info                 
+                False,                                      # true to generate bottom side info
+                True,                                       # true for csv format, false for ascii (utf8) format
+                self.m_checkOrigin.GetValue(),              # true to use auxiliary axis as an origin for the position data 
+                self.m_checkNegXCord.GetValue()             # true to negate X coordinate on bottom side
             )
+            exporterTop.SetVariant(self.m_selVariant.GetStringSelection())
             
             pos_data_top = exporterTop.GenPositionData()
             pos_data_top = self.__parseCsv__(pos_data_top)
@@ -339,17 +358,19 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
             self.m_tcLog.AppendText("Component count: " + str(exporterTop.GetFootprintCount()) + ".\n")
             
             exporterBottom = pcbnew.PLACE_FILE_EXPORTER(
-                board,
-                self.m_selUnits.GetSelection() == 1,    # is mm?
-                self.m_checkOnlySMD.GetValue(),
-                self.m_checkNoTH.GetValue(),
-                self.m_checkDNP.GetValue(),
-                False,
-                True,
-                True,   # is csv?            
-                self.m_checkOrigin.GetValue(),
-                self.m_checkNegXCord.GetValue()
+                board,                                      # board refernce
+                self.m_selUnits.GetSelection() == 1,        # true for mm, false for inches
+                self.m_checkOnlySMD.GetValue(),             # Include only SMD components
+                self.m_checkNoTH.GetValue(),                # Exclude any footprints with through-hole pads
+                self.m_checkDNP.GetValue(),                 # Exclude DNP components
+                self.m_checkBOM.GetValue(),                 # Exclude components flagged exclude from BOM
+                False,                                      # true to generate top side info                 
+                True,                                       # true to generate bottom side info
+                True,                                       # true for csv format, false for ascii (utf8) format
+                self.m_checkOrigin.GetValue(),              # true to use auxiliary axis as an origin for the position data 
+                self.m_checkNegXCord.GetValue()             # true to negate X coordinate on bottom side
             )
+            exporterBottom.SetVariant(self.m_selVariant.GetStringSelection())
             
             pos_data_bottom = exporterBottom.GenPositionData()
             pos_data_bottom = self.__parseCsv__(pos_data_bottom)
@@ -494,6 +515,8 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
             self.m_checkEdgeLayer.Enable(True)
             self.m_checkNegXCord.Enable(False)
             self.m_checkSingleFile.Enable(False)
+            self.m_checkDNP.Enable(False)
+            self.m_checkBOM.Enable(False)
             
             self.m_selValueField.Enable(False)
             self.m_selAddFields.Enable(False)
@@ -504,6 +527,8 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
             self.m_checkEdgeLayer.Enable(False)
             self.m_checkNegXCord.Enable(True)
             self.m_checkSingleFile.Enable(True)
+            self.m_checkDNP.Enable(True)
+            self.m_checkBOM.Enable(True)
             
             self.m_selValueField.Enable(True)
             self.m_selAddFields.Enable(True)
@@ -558,9 +583,13 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
             value_int = self.m_selValueField.FindString(data['value_field'])
             self.m_selValueField.SetSelection(value_int)
             
+            vairant_int = self.m_selVariant.FindString(data['variant'])
+            self.m_selVariant.SetSelection(vairant_int)
+            
             self.m_checkOnlySMD.SetValue(data['only_smd']),
             self.m_checkNoTH.SetValue(data['no_th']),
             self.m_checkDNP.SetValue(data['no_dnp']),
+            self.m_checkBOM.SetValue(data['no_bom']),
             self.m_checkEdgeLayer.SetValue(data['edge_layer']),                
             self.m_checkOrigin.SetValue(data['origin'])
             self.m_checkNegXCord.SetValue(data['neg_xcord'])
@@ -580,10 +609,12 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
                 'format': self.m_selFormat.GetSelection(),
                 'units': self.m_selUnits.GetSelection(),
                 'value_field': self.m_selValueField.GetStringSelection(),
+                'variant': self.m_selVariant.GetStringSelection(),
                 
                 'only_smd': self.m_checkOnlySMD.GetValue(),
                 'no_th': self.m_checkNoTH.GetValue(),
                 'no_dnp': self.m_checkDNP.GetValue(),
+                'no_bom': self.m_checkBOM.GetValue(),
                 'edge_layer': self.m_checkEdgeLayer.GetValue(),
                 'origin': self.m_checkOrigin.GetValue(),
                 'neg_xcord': self.m_checkNegXCord.GetValue(),
