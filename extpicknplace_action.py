@@ -85,7 +85,7 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
             self.__exportGerber__()
         else:
             # plain text and csv output
-            if self.m_selValueField.GetStringSelection() == "Value":
+            if self.m_selValueField.GetStringSelection() == "Value" and not self.m_checkDNPFlag.GetValue():
                 checked_indices = self.m_selAddFields.GetCheckedItems()
                 if len(checked_indices) == 0:
                     self.__exportPlainCSV__()
@@ -281,6 +281,26 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
             self.m_tcLog.AppendText("Component count: " + str(exporterBottom.GetFootprintCount()) + ".\n")
             fcnt = exporterTop.GetFootprintCount() + exporterBottom.GetFootprintCount()
             self.m_tcLog.AppendText("Full component count: " + str(fcnt) + ".\n")
+
+
+    def __addDNPFlagColumn__(self, pos_data):
+        board = pcbnew.GetBoard()
+        variant = self.m_selVariant.GetStringSelection()
+        use_variant = board.HasVariant(variant)
+        
+        dnp_by_ref = {}
+        for fp in board.GetFootprints():
+            if use_variant:
+                dnp = fp.GetDNPForVariant(variant)
+            else:
+                # default board (no real variant selected)
+                dnp = fp.IsDNP()
+            dnp_by_ref[fp.GetReference()] = dnp
+        
+        for row in pos_data:
+            row["DNP"] = "True" if dnp_by_ref.get(row.get("Ref"), False) else "False"
+        
+        return pos_data
         
     
     def __exportModified__(self):
@@ -309,6 +329,8 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
             pos_data = exporter.GenPositionData()
             pos_data = self.__parseCsv__(pos_data)
             pos_data = self.__modifyDictData__(pos_data, comp_data)
+            if self.m_checkDNPFlag.GetValue():
+                pos_data = self.__addDNPFlagColumn__(pos_data)
             file_name = project_name + "-all"
             if self.m_selFormat.GetSelection() == 0:
                 file_name = file_name + ".pos"
@@ -342,6 +364,8 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
             pos_data_top = exporterTop.GenPositionData()
             pos_data_top = self.__parseCsv__(pos_data_top)
             pos_data_top = self.__modifyDictData__(pos_data_top, comp_data)
+            if self.m_checkDNPFlag.GetValue():
+                pos_data_top = self.__addDNPFlagColumn__(pos_data_top)
             file_name_top = project_name + "-" + exporterTop.GetFrontSideName()
             if self.m_selFormat.GetSelection() == 0:
                 file_name_top = file_name_top + ".pos"
@@ -375,6 +399,8 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
             pos_data_bottom = exporterBottom.GenPositionData()
             pos_data_bottom = self.__parseCsv__(pos_data_bottom)
             pos_data_bottom = self.__modifyDictData__(pos_data_bottom, comp_data)
+            if self.m_checkDNPFlag.GetValue():
+                pos_data_bottom = self.__addDNPFlagColumn__(pos_data_bottom)
             file_name_bottom = project_name + "-" + exporterBottom.GetBackSideName()
             if self.m_selFormat.GetSelection() == 0:
                 file_name_bottom = file_name_bottom + ".pos"
@@ -517,6 +543,7 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
             self.m_checkSingleFile.Enable(False)
             self.m_checkDNP.Enable(False)
             self.m_checkBOM.Enable(False)
+            self.m_checkDNPFlag.Enable(False)
             
             self.m_selValueField.Enable(False)
             self.m_selAddFields.Enable(False)
@@ -529,6 +556,7 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
             self.m_checkSingleFile.Enable(True)
             self.m_checkDNP.Enable(True)
             self.m_checkBOM.Enable(True)
+            self.m_checkDNPFlag.Enable(True)
             
             self.m_selValueField.Enable(True)
             self.m_selAddFields.Enable(True)
@@ -594,6 +622,7 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
             self.m_checkOrigin.SetValue(data['origin'])
             self.m_checkNegXCord.SetValue(data['neg_xcord'])
             self.m_checkSingleFile.SetValue(data['single_file'])
+            self.m_checkDNPFlag.SetValue(data['add_dnp'])
             
             checked_items = data.get("checked_items", [])
             for i in range(self.m_selAddFields.GetCount()):
@@ -618,7 +647,8 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
                 'edge_layer': self.m_checkEdgeLayer.GetValue(),
                 'origin': self.m_checkOrigin.GetValue(),
                 'neg_xcord': self.m_checkNegXCord.GetValue(),
-                'single_file': self.m_checkSingleFile.GetValue()
+                'single_file': self.m_checkSingleFile.GetValue(),
+                'add_dnp': self.m_checkDNPFlag.GetValue()
             }
             
             checked_indices = self.m_selAddFields.GetCheckedItems()
