@@ -114,7 +114,7 @@ class ExtPicknPlaceGUI ( wx.Frame ):
         self.m_checkDNP = wx.CheckBox( self, wx.ID_ANY, _(u"Exclude all footprints with the Do Not Popuplate flag set"), wx.DefaultPosition, wx.DefaultSize, 0 )
         bSizer61.Add( self.m_checkDNP, 0, wx.ALL, 5 )
 
-        self.m_checkBOM = wx.CheckBox( self, wx.ID_ANY, _(u"Exclue all footprints with Exluce from BOM flag set"), wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_checkBOM = wx.CheckBox( self, wx.ID_ANY, _(u"Exclue all footprints with Exclude from BOM flag set"), wx.DefaultPosition, wx.DefaultSize, 0 )
         bSizer61.Add( self.m_checkBOM, 0, wx.ALL, 5 )
 
         self.m_checkEdgeLayer = wx.CheckBox( self, wx.ID_ANY, _(u"Include board edge layer"), wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -128,6 +128,9 @@ class ExtPicknPlaceGUI ( wx.Frame ):
 
         self.m_checkSingleFile = wx.CheckBox( self, wx.ID_ANY, _(u"Generate single file with both front and back positions"), wx.DefaultPosition, wx.DefaultSize, 0 )
         bSizer61.Add( self.m_checkSingleFile, 0, wx.ALL, 5 )
+
+        self.m_checkDNPFlag = wx.CheckBox( self, wx.ID_ANY, _(u"Add DNP flag data"), wx.DefaultPosition, wx.DefaultSize, 0 )
+        bSizer61.Add( self.m_checkDNPFlag, 0, wx.ALL, 5 )
 
 
         bSizer61.Add( ( 0, 20), 0, wx.EXPAND, 5 )
