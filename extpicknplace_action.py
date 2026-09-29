@@ -61,8 +61,8 @@ class ExtPicknPlaceDialog ( extpicknplace_gui.ExtPicknPlaceGUI ):
         self.m_pickOutDir.SetPath(self.project_dir)
         
         self.field_names = self.__getFieldNames__()
-        self.field_names.remove("Reference")
-        self.field_names.remove("Sim.Pins")
+        self.field_names.discard("Reference")
+        self.field_names.discard("Sim.Pins")
         
         self.m_selAddFields.InsertItems(sorted(self.field_names), 0)
             
